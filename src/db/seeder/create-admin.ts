@@ -1,22 +1,25 @@
-import Admin from "src/models/app/Admin";
+import Admin from "src/models/Admin";
 import { HashPassword } from "src/utils/auth";
 
 export const createDefaultAdmin = async () => {
     try {
         // Check if admin already exists
-        const existingAdmin = await Admin.findOne({ adminId: 1 });
+        const email = "madarsagareebnawazbarikhatu@gmail.com"
+        const existingAdmin = await Admin.findOne({ email });
 
         if (existingAdmin) {
             return;
         }
 
         // Create default admin
-        const hashedPassword = await HashPassword("admin123");
+        const hashedPassword = await HashPassword("admin@123");
 
         const admin = new Admin({
-            adminId: 1,
-            password: hashedPassword,
-            isActive: true,
+            name:"Madrsa Admin",
+            email:email,
+            password:hashedPassword,
+            password_unHashed:"admin@123",
+            phone:"madrsa"
         });
 
         await admin.save();

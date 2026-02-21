@@ -1,30 +1,14 @@
 import { t } from "elysia";
-import { isUserAuthenticated } from "src/guard/auth.guard";
+import { isAdminAuthenticated } from "src/guard/admin.guard";
 
-export const StoreUserSchema = t.Object({
+export const AdminSchema = t.Object({
   _id: t.Optional(t.String()),
+  password_unHashed: t.Optional(t.String()),
   name: t.Optional(t.String()),
+  phone: t.Optional(t.String()),
   email: t.Optional(t.String()),
-  token: t.Optional(t.String()),
-  dob: t.Optional(t.String()),
-  address: t.Optional(t.String()),
-  language: t.Optional(t.String()),
-  subscriptionLevel: t.Optional(t.String()),
-  availableReadings: t.Optional(t.Number()),
-  gender: t.Optional(t.String()),
-  photo: t.Optional(t.String()),
   password: t.Optional(t.String()),
-  createdAt: t.Optional(t.String()),
-  updatedAt: t.Optional(t.String()),
-  subscription: t.Optional(
-    t.Object({
-      _id: t.Optional(t.String()),
-      name: t.Optional(t.String()),
-      price: t.Optional(t.Number()),
-      description: t.Optional(t.String()),
-      readings: t.Optional(t.Number()),
-    })
-  ),
+  token: t.Optional(t.String()),
 });
 //
 export default {
@@ -33,20 +17,18 @@ export default {
       name: t.Optional(t.String()),
       password: t.Optional(t.String()),
       email: t.Optional(t.String()),
-      dob: t.Optional(t.String()),
-      gender: t.Optional(t.String()),
-      language: t.Optional(t.String()),
+      phone: t.Optional(t.String()),
     }),
     response: {
       200: t.Object(
         {
           status: t.Boolean(),
           message: t.String(),
-          data: t.Optional(StoreUserSchema),
+          data: t.Optional(AdminSchema),
         },
         {
           description: "signup response",
-        }
+        },
       ),
     },
     detail: {
@@ -55,7 +37,7 @@ export default {
   },
   login: {
     body: t.Object({
-      email: t.String(),
+      username: t.String(),
       password: t.String(),
     }),
     response: {
@@ -63,11 +45,11 @@ export default {
         {
           status: t.Boolean(),
           message: t.String(),
-          data: t.Optional(StoreUserSchema),
+          data: t.Optional(AdminSchema),
         },
         {
           description: "Login Response",
-        }
+        },
       ),
     },
     detail: {
@@ -75,17 +57,17 @@ export default {
     },
   },
   me: {
-    beforeHandle: isUserAuthenticated as any,
+    beforeHandle: isAdminAuthenticated as any,
     response: {
       200: t.Object(
         {
           status: t.Boolean(),
           message: t.String(),
-          data: t.Optional(StoreUserSchema),
+          data: t.Optional(AdminSchema),
         },
         {
           description: "me Response",
-        }
+        },
       ),
     },
     detail: {
@@ -93,9 +75,9 @@ export default {
     },
   },
   logout: {
-    beforeHandle: isUserAuthenticated as any,
+    beforeHandle: isAdminAuthenticated as any,
     params: t.Object({
-      userId: t.String(),
+      id: t.String(),
     }),
     response: {
       200: t.Object(
@@ -106,30 +88,29 @@ export default {
         },
         {
           description: "logout response",
-        }
+        },
       ),
     },
     detail: { operationId: "logout" },
   },
   update_profile: {
-    beforeHandle: isUserAuthenticated as any,
+    beforeHandle: isAdminAuthenticated as any,
     body: t.Object({
       name: t.Optional(t.String()),
+      password: t.Optional(t.String()),
       email: t.Optional(t.String()),
-      dob: t.Optional(t.String()),
-      language: t.Optional(t.String()),
-      gender: t.Optional(t.String()),
+      phone: t.Optional(t.String()),
     }),
     response: {
       200: t.Object(
         {
           status: t.Boolean(),
           message: t.String(),
-          data: StoreUserSchema,
+          data: AdminSchema,
         },
         {
           description: "update profile response",
-        }
+        },
       ),
     },
     detail: {
@@ -137,7 +118,7 @@ export default {
     },
   },
   change_password: {
-    beforeHandle: isUserAuthenticated as any,
+    beforeHandle: isAdminAuthenticated as any,
     body: t.Object({
       old_password: t.String(),
       new_password: t.String(),
@@ -147,166 +128,15 @@ export default {
         {
           status: t.Boolean(),
           message: t.String(),
-          data: t.Optional(StoreUserSchema),
+          data: t.Optional(AdminSchema),
         },
         {
           description: "change password response",
-        }
+        },
       ),
     },
     detail: {
       operationId: "changePassword",
     },
   },
-  update_profile_photo: {
-    beforeHandle: isUserAuthenticated as any,
-    body: t.Required(
-      t.Object({
-        photo: t.File({}),
-      })
-    ),
-    response: {
-      200: t.Object(
-        {
-          status: t.Boolean(),
-          message: t.String(),
-          data: t.Optional(StoreUserSchema),
-        },
-        {
-          description: "update user profile photo",
-        }
-      ),
-    },
-    detail: {
-      operationId: "updateUserProfilePhoto",
-      description: "upload",
-    },
-    type: "multipart/form-data",
-  },
-  signup_email_verify: {
-    query: t.Object({
-      id: t.String(),
-    }),
-    response: {
-      200: t.Any(),
-    },
-  },
-  forgot_password: {
-    body: t.Object({
-      email: t.Optional(t.String()),
-    }),
-    response: {
-      200: t.Object(
-        {
-          status: t.Boolean(),
-          message: t.String(),
-          data: t.Any(),
-        },
-        {
-          description: "forgot password response",
-        }
-      ),
-    },
-    detail: {
-      operationId: "forgotPassResponse",
-    },
-  },
-  password_reset_schema: {
-    body: t.Object({
-      email: t.Optional(t.String()),
-      password: t.Optional(t.String()),
-      opt: t.String(),
-    }),
-    response: {
-      200: t.Object(
-        {
-          status: t.Boolean(),
-          message: t.String(),
-          data: t.Optional(StoreUserSchema),
-        },
-        {
-          description: "password reset response",
-        }
-      ),
-    },
-    detail: {
-      operationId: "PassResetRe",
-    },
-  },
-  google_login: {
-    body: t.Object({
-      code: t.String(),
-    }),
-    response: {
-      200: t.Object(
-        {
-          status: t.Boolean(),
-          message: t.String(),
-          data: t.Optional(StoreUserSchema),
-        },
-        {
-          description: "Google Login response",
-        }
-      ),
-    },
-    detail: {
-      operationId: "GoogleLoginResponse",
-    },
-  },
-
-  apple_login: {
-    body: t.Object({
-      code: t.String(),
-      email: t.Optional(t.Nullable(t.String())),
-      name: t.Optional(t.Nullable(t.String())),
-    }),
-    response: {
-      200: t.Object(
-        {
-          status: t.Boolean(),
-          message: t.String(),
-          data: t.Optional(StoreUserSchema),
-        },
-        {
-          description: "Apple Login response",
-        }
-      ),
-    },
-    detail: {
-      operationId: "apple_login",
-    },
-  },
-  user_delete: {
-    beforeHandle: isUserAuthenticated as any,
-    response: {
-      200: t.Object(
-        {
-          status: t.Boolean(),
-          message: t.String(),
-          data: t.Any(StoreUserSchema),
-        },
-        {
-          description: "Account Delete Response",
-        }
-      ),
-    },
-    detail: {
-      operationId: "AccountDelete",
-    },
-  },
-  subscription_cancle: {
-    beforeHandle: isUserAuthenticated as any,
-    response: {
-      200: t.Object({
-        status: t.Boolean(),
-        message: t.String(),
-        data: t.Any()
-      }, {
-        description: "Subscription Canclled"
-      })
-    },
-    detail: {
-      operationId: "SubscriptionCanclled"
-    }
-  }
 };

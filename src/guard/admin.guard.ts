@@ -1,42 +1,68 @@
 import { customError } from "src/utils/AppErr";
-import jwt from "src/utils/jwt";
-import Admin from "src/models/app/Admin";
 
-export const isAdminAuthenticated = async (request: any) => {
-    try {
-        const authHeader = request.headers.authorization;
+import Admin from "src/models/Admin";
+import JWT from "src/utils/jwt";
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            throw customError("Access token required", 401);
-        }
+export const isAdminAuthenticated = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Context: any,
+) => {
+  const { set, headers, request } = Context;
+  // console.log("/!\\ AUTHENTICATED GUARD /!\\");
 
-        const token = authHeader.substring(7);
-        const decoded = jwt.verify(token) as any;
+  if (!headers!.authorization) {
+    // console.log("@Error: No access token", headers);
+    set.status = 401;
+    return {
+      status: false,
+      message: "Unauthorized",
+      data: "No access token",
+    };
+  }
 
-        if (!decoded || !decoded.adminId) {
-            throw customError("Invalid token", 401);
-        }
+  let token = headers.authorization.replace("Bearer ", "");
 
-        // Check if admin exists and is active
-        const admin = await Admin.findOne({
-            adminId: decoded.adminId,
-            isActive: true
-        });
+  const jwt = JWT.verify(token);
+  if (!jwt) {
+    // console.log("@Error: Invalid access token", jwt);
+    set.status = 401;
+    return {
+      status: false,
+      message: "Unauthorized",
+      data: "Invalid access token",
+    };
+  }
 
-        if (!admin) {
-            throw customError("Admin not found or inactive", 404);
-        }
+  const { _id } = jwt;
+  if (!_id) {
+    // console.log("@Error: Invalid access token", _id);
+    set.status = 401;
+    return {
+      status: false,
+      message: "Unauthorized",
+      data: "Invalid access token",
+    };
+  }
 
-        // Attach admin to request
-        request.admin = { ...(admin.toObject()), token: token };
+  if (!jwt) {
+    // console.log("@Error: User not found", jwt);
+    set.status = 401;
+    return {
+      status: false,
+      message: "Unauthorized",
+      data: "User not found",
+    };
+  }
 
-    } catch (error: any) {
-        if (error.name === "JsonWebTokenError") {
-            throw customError("Invalid token", 401);
-        }
-        if (error.name === "TokenExpiredError") {
-            throw customError("Token expired", 401);
-        }
-        throw error;
-    }
-}; 
+  const user = await Admin.findById(jwt._id);
+
+  // const userContext = new Elysia({ name: "user" }).decorate("user", user);
+  Context.user = user;
+
+  // console.log("user", userContext);
+
+  // return {
+  // 	status: true,
+  // 	data: user,
+  // };
+};

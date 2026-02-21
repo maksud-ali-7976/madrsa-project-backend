@@ -1,0 +1,97 @@
+import { t } from "elysia";
+
+export const ResultStoreSchema = t.Object({
+  _id: t.Optional(t.String()),
+  student: t.Any(),
+  session: t.String(),
+  class: t.String(),
+  marks: t.Number(),
+  grade: t.String(),
+  remarks: t.String(),
+  issue_date: t.String(),
+});
+
+export const MetaPagination = t.Object({
+  pages: t.Number(),
+  total: t.Number(),
+  page: t.Number(),
+  size: t.Number(),
+});
+
+export default {
+  list: {
+    query: t.Object({
+      page: t.String(),
+      size: t.String(),
+    }),
+    response: {
+      200: t.Object(
+        {
+          status: t.Boolean(),
+          message: t.String(),
+          data: t.Array(ResultStoreSchema),
+          meta: MetaPagination,
+        },
+        {
+          description: "Student Result Response",
+        },
+      ),
+    },
+    detail: {
+      operationId: "StudentResult",
+    },
+  },
+  add: {
+    body: t.Object({
+      student: t.String(),
+      session: t.String(),
+      class: t.String(),
+      marks: t.Number(),
+      grade: t.String(),
+      remarks: t.String(),
+    }),
+    response: {
+      200: t.Object(
+        {
+          status: t.Boolean(),
+          message: t.String(),
+          data: ResultStoreSchema,
+        },
+        {
+          description: "Student Result Add Response",
+        },
+      ),
+    },
+    detail: {
+      operationId: "ResultAdd",
+    },
+  },
+  update: {
+    query: t.Object({
+      id: t.String(),
+    }),
+    body: t.Object({
+      student: t.Optional(t.String()),
+      session: t.Optional(t.String()),
+      class: t.Optional(t.String()),
+      marks: t.Optional(t.Number()),
+      grade: t.Optional(t.String()),
+      remarks: t.Optional(t.String()),
+    }),
+    response: {
+      200: t.Object(
+        {
+          status: t.Boolean(),
+          message: t.String(),
+          data: ResultStoreSchema,
+        },
+        {
+          description: "Student Result Update Response",
+        },
+      ),
+    },
+    detail: {
+      operationId: "ResultUpdate",
+    },
+  },
+};

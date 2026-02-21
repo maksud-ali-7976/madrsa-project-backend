@@ -1,125 +1,87 @@
-// @ts-ignore
-import { UserDetail } from "otpless-node-js-auth-sdk";
-
-import { customError } from "src/utils/AppErr";
-import { HashPassword, VerifyPassword } from "src/utils/auth";
-import jwt from "src/utils/jwt";
-import { R } from "src/utils/response-helpers";
-import schema from "./auth.schema";
 import { createElysia } from "src/utils/createElysia";
-import moment from "moment";
-import { generateUserToken } from "src/utils/common";
-import redis from "src/db/redis";
-import redisKeys from "src/config/redis-keys";
-import Admin from "src/models/app/Admin";
-import { uploadFile } from "src/utils/upload";
+import Elysia, { t } from "elysia";
+import  Admin  from "src/models/Admin";
+import { R } from "src/utils/response-helpers";
+import { customError } from "src/utils/AppErr";
+import jwt from "src/utils/jwt";
+import { HashPassword, VerifyPassword } from "src/utils/auth";
+import authSchema from "./auth.schema";
 import { sendMail } from "src/utils/mailer";
-import otp from "src/utils/otp";
-import Plan from "src/models/app/Plan";
-import Subscriptions from "src/models/app/Subscriptions";
-import AppWrite from "src/utils/AppWrite";
-import {
-    getVerificationEmailTemplate,
-    getWelcomeEmailTemplate,
-} from "src/utils/mailTemplate";
-import axios from "axios";
-import getErrorMessage from "src/utils/languageError";
-import { verifyGoogleToken } from "src/utils/Google";
-import { verifyAppleToken } from "src/utils/Apple";
-import { t } from "elysia";
-import { isAdminAuthenticated } from "src/guard/admin.guard";
 
 export default createElysia({ prefix: "/auth" }).guard(
-    {
-        detail: {
-            tags: ["AdminAuth"],
-        },
+  {
+    detail: {
+      tags: ["auth"],
     },
-    (app) => app
-        .post("/login", async ({ body }) => {
-            try {
-                const { adminId, password } = body;
+  },
+  (app) =>
+    app
+      .post(
+        "/login",
+        async ({ body }) => {
+          const user = await Admin.findOne({
+            $or: [
+              {
+                email: body.username,
+              },
+              {
+                phone: body.username,
+              },
+            ],
+          });
+          if (!user) {
+            return customError("Invalid credentials.");
+          }
 
-                // Find admin by adminId
-                const admin = await Admin.findOne({
-                    adminId: adminId,
-                    isActive: true
-                });
+          if (!VerifyPassword(body.password, user.password)) {
+            return customError("Invalid credentials.");
+          }
 
-                if (!admin) {
-                    throw customError("Invalid credentials", 401);
-                }
+          let u: Record<string, any> = user.toObject();
 
-                // Verify password
-                const isValidPassword = await VerifyPassword(password, admin.password);
-                if (!isValidPassword) {
-                    throw customError("Invalid credentials", 401);
-                }
+          u.token = jwt.sign({
+            _id: user._id,
+            phone: user.phone,
+            email: user.email,
+          });
+          return R("Login Successfully", u);
+        },
+        authSchema.login,
+      )
+      .get(
+        "/me",
+        async (ctx) => {
+          const admin = await Admin.findById(ctx.user._id)
+            .populate("role")
+            .lean();
+          if (!admin) {
+            return customError("Account Not Found");
+          }
+          
+          return R("admin data", admin);
+        },
+        authSchema.me,
+      )
+      .post(
+        "/password-change",
+        async (ctx) => {
+          const user = await Admin.findById(ctx.user._id);
+          console.log("User", user);
 
-                // Generate token
-                const token = jwt.sign({
-                    adminId: admin.adminId,
-                    role: "admin"
-                });
+          if (!user) {
+            return customError("User Not Found");
+          }
 
-                return R("Login successful", {
-                    token,
-                    admin: {
-                        adminId: admin.adminId,
-                        isActive: admin.isActive
-                    }
-                });
-            } catch (error: any) {
-                throw customError(error.message, error.status || 500);
-            }
-        }, {
-            body: t.Object({
-                adminId: t.Number(),
-                password: t.String(),
-            }),
-            response: {
-                200: t.Object({
-                    status: t.Boolean(),
-                    message: t.String(),
-                    data: t.Object({
-                        token: t.String(),
-                        admin: t.Object({
-                            adminId: t.Number(),
-                            isActive: t.Boolean(),
-                        }),
-                    }),
-                }),
-            },
-            detail: {
-                summary: "Admin Login",
-                description: "Login for admin users using adminId and password"
-            }
-        })
-        .get("/me", async ({ body, admin }) => {
+          if (VerifyPassword(ctx.body.old_password, user.password)) {
+            return customError("Old Password Wrong");
+          }
 
-            const data = await Admin.findById(admin._id)
+          user.password = HashPassword(ctx.body.new_password);
+          user.password_unHashed = ctx.body.new_password;
 
-
-            return R("OK", { token: admin.token, admin: data })
-
-        }, {
-            beforeHandle: isAdminAuthenticated as any,
-            response: {
-                200: t.Object({
-                    status: t.Boolean(),
-                    message: t.String(),
-                    data: t.Object({
-                        token: t.String(),
-                        admin: t.Object({
-                            adminId: t.Number(),
-                            isActive: t.Boolean(),
-                        }),
-                    }),
-                }),
-            },
-            detail: {
-                summary: "Admin me",
-                description: "Login for admin users using adminId and password"
-            }
-        })
+          await user.save();
+          return R("Password Change SuccessFully");
+        },
+        authSchema.change_password,
+      )
 );

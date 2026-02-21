@@ -172,7 +172,7 @@ api.use(
 
 		documentation: {
 			info: {
-				title: "Qahween User API Documentation",
+				title: "Madrsa Gareeb Nawaz API Documentation",
 				version: "0.0.1",
 			},
 		},
