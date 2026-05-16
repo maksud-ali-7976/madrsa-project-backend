@@ -27,7 +27,7 @@ jobs:
         run: bun add
 
       - name: Run testing
-        run: bun test
+        run: bun run test
 
       - name: Build Project
-        run: bun build
+        run: bun run build
