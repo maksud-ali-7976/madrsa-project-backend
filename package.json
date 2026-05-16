@@ -2,7 +2,7 @@
 	"name": "bun-sarovar-test",
 	"version": "1.0.60",
 	"scripts": {
-		"dev": "bun run --watch src/index.ts",
+		"dev": "bun run src/index.ts",
 		"build": "bun build src/index.ts --outdir ./build --sourcemap=external --target=node --external pdfkit",
 		"start": "NODE_ENV=production bun build/index.js",
 		"test": "bun --watch src/test/test.ts",
