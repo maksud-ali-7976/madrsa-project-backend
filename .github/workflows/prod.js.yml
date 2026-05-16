@@ -10,27 +10,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: SSH Remote Commands
-        # You may pin to the exact commit or the version.
-        # uses: appleboy/ssh-action@d91a1af6f57cd4478ceee14d7705601dafabaa19
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          # ssh key
-          key: ${{secrets.SSH_KEY}}
-          # ssh host
-          host: ${{secrets.SSH_HOST}}
-          # ssh user
-          # export BUN_INSTALL="/root/.bun/bin/bun"
-          # export PATH="$BUN_INSTALL/bin:$PATH"
-          username: ubuntu
-          script: |
-            sudo -u root whoami
-            sudo -u root su
-            cd /home/ubuntu/projects/madrsa-project-backend
-            sudo -u root git reset --hard
-            sudo -u root git pull https://maksud-ali-7976:${{secrets.GIT_TOKEN}}@github.com/maksud-ali-7976/madrsa-project-backend.git main
-            sudo -u root /root/.bun/bin/bun i
-            sudo -u root /root/.bun/bin/bun build src/index.ts --outdir ./build --sourcemap=external --target=node --external pdfkit
-            sudo -u root pm2 restart ecosystem.config.js
+    steps: 
+      - name: CheckOut code
+        uses: action/checkout@v4
+      
+      - name: Setup bun 
+        uses: oven-sh/setup-bun@v2
+      
+        with: 
+          bun-version: latest
+
+      - name: Check Bun version
+        run: bun --version
+
+      - name: Install dependencies
+        run: bun add
+
+      - name: Run testing
+        run: bun test
+
+      - name: Build Project
+        run: bun build

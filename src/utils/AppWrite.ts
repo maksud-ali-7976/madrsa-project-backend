@@ -29,7 +29,7 @@ const AppWrite = {
     return fileNames;
   },
   toFileUrl: (fileId: string) =>
-    `https://cloud.appwrite.io/v1/storage/buckets/${BUCKET_ID}/files/${fileId}/view?project=${PROJECT_ID}&mode=admin`,
+    `https://fra.cloud.appwrite.io/v1/storage/buckets/${BUCKET_ID}/files/${fileId}/view?project=${PROJECT_ID}&mode=admin`,
 };
 
 export default AppWrite;

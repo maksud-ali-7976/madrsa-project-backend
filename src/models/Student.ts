@@ -1,6 +1,7 @@
 import { getModelForClass, prop, modelOptions } from "@typegoose/typegoose";
 
 import type { Ref } from "@typegoose/typegoose";
+import Class, { MadrasaClass } from "./Class";
 
 @modelOptions({ schemaOptions: { collection: "Students", timestamps: true } })
 export class StudentClass {
@@ -13,8 +14,8 @@ export class StudentClass {
   @prop({})
   public dob!: Date;
 
-  @prop({})
-  public class!: string;
+  @prop({ ref: () => MadrasaClass })
+  public class!: Ref<MadrasaClass>;
 
   @prop({})
   public address!: string;
@@ -24,6 +25,9 @@ export class StudentClass {
 
   @prop({})
   public adhar?: string;
+
+  @prop({})
+  public photo?: string;
 }
 
 export default getModelForClass(StudentClass);

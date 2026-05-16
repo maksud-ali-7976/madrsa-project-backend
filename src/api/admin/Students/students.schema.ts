@@ -1,14 +1,16 @@
 import { t } from "elysia";
+import { StoreClassSchema } from "../class/class.schema";
 
 export const StoreStudentSchema = t.Object({
   _id: t.String(),
   name: t.String(),
   guardian_name: t.String(),
   dob: t.String(),
-  class: t.String(),
+  class: StoreClassSchema,
   address: t.String(),
   contact: t.String(),
   adhar: t.String(),
+  photo: t.String(),
 });
 
 export const MetaPagination = t.Object({
@@ -30,7 +32,7 @@ export default {
           status: t.Boolean(),
           message: t.String(),
           data: t.Array(StoreStudentSchema),
-          meat: MetaPagination,
+          meta: MetaPagination,
         },
         {
           description: "Students List Response",
@@ -50,6 +52,7 @@ export default {
       address: t.String(),
       contact: t.String(),
       adhar: t.Optional(t.String()),
+      photo: t.Optional(t.String()),
     }),
 
     response: {
@@ -95,6 +98,26 @@ export default {
     },
     detail: {
       operationId: "StudentUpdates",
+    },
+  },
+  delete: {
+    query: t.Object({
+      id: t.String(),
+    }),
+    response: {
+      200: t.Object(
+        {
+          status: t.Boolean(),
+          message: t.String(),
+          data: StoreStudentSchema,
+        },
+        {
+          description: "Student Delete Response",
+        },
+      ),
+    },
+    detail: {
+      operationId: "StudentDelete",
     },
   },
 };

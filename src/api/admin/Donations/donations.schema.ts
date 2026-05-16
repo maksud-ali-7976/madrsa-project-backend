@@ -1,12 +1,18 @@
 import { t } from "elysia";
 
 export const DonationSchema = t.Object({
+  _id: t.String(),
   donar_name: t.String(),
   type: t.String(),
   amount: t.Number(),
   date: t.String(),
   payment_method: t.Optional(t.String()),
   notes: t.Optional(t.String()),
+});
+
+export const DonationStatsSchema = t.Object({
+  total_donation: t.Optional(t.Number()),
+  total_zakat: t.Optional(t.Number()),
 });
 
 export const MetaPgination = t.Object({
@@ -91,6 +97,23 @@ export default {
     },
     detail: {
       operationId: "DonationUpdate",
+    },
+  },
+  stats: {
+    response: {
+      200: t.Object(
+        {
+          status: t.Boolean(),
+          message: t.String(),
+          data: DonationStatsSchema,
+        },
+        {
+          description: "Donation Stats response",
+        },
+      ),
+    },
+    detail: {
+      operationId: "DonationStats",
     },
   },
 };

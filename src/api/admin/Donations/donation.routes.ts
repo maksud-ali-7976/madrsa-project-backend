@@ -60,5 +60,25 @@ export default createElysia({ prefix: "/donations" }).guard(
           return R("Donation Updated Successfully", donation);
         },
         donationsSchema.update,
+      )
+      .get(
+        "/stats",
+        async () => {
+          const stats = await Donations.aggregate([
+            {
+              $group: {
+                _id: null,
+                totalDonation: { $sum: "$amount" },
+                totalZakat: {
+                  $sum: {
+                    $cond: [{ $eq: ["$type", "ZAKAT"] }, "$amount", 0],
+                  },
+                },
+              },
+            },
+          ]);
+          return R("Donation Stats", stats);
+        },
+        donationsSchema.stats,
       ),
 );

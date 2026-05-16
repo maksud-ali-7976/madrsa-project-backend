@@ -13,7 +13,11 @@ export class DonationsClass {
   @prop({})
   public donar_name!: string;
 
-  @prop({ type: ()=>String, enum: DonationsType, default: DonationsType.LILLAH })
+  @prop({
+    type: () => String,
+    enum: DonationsType,
+    default: DonationsType.LILLAH,
+  })
   public type!: DonationsType;
 
   @prop({})
@@ -27,6 +31,9 @@ export class DonationsClass {
 
   @prop({})
   public notes?: string;
+
+  @prop({})
+  public donar_phone?: string;
 }
 
 export default getModelForClass(DonationsClass);

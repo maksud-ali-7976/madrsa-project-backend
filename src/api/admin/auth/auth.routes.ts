@@ -1,6 +1,6 @@
 import { createElysia } from "src/utils/createElysia";
 import Elysia, { t } from "elysia";
-import  Admin  from "src/models/Admin";
+import Admin from "src/models/Admin";
 import { R } from "src/utils/response-helpers";
 import { customError } from "src/utils/AppErr";
 import jwt from "src/utils/jwt";
@@ -28,7 +28,7 @@ export default createElysia({ prefix: "/auth" }).guard(
                 phone: body.username,
               },
             ],
-          });
+          }).populate("role");
           if (!user) {
             return customError("Invalid credentials.");
           }
@@ -44,6 +44,14 @@ export default createElysia({ prefix: "/auth" }).guard(
             phone: user.phone,
             email: user.email,
           });
+
+          if (Object.keys(u?.permissions ?? {}).length > 0) {
+            (u.role as any).permissions = {
+              ...(u.role as any).permissions,
+              ...u.permissions,
+            };
+          }
+
           return R("Login Successfully", u);
         },
         authSchema.login,
@@ -51,14 +59,22 @@ export default createElysia({ prefix: "/auth" }).guard(
       .get(
         "/me",
         async (ctx) => {
-          const admin = await Admin.findById(ctx.user._id)
+          const user = await Admin.findById(ctx.user._id)
             .populate("role")
             .lean();
-          if (!admin) {
-            return customError("Account Not Found");
+
+          if (!user) {
+            return customError("Invalid credentials.");
           }
-          
-          return R("admin data", admin);
+
+          if (Object.keys(user?.permissions ?? {}).length > 0) {
+            (user.role as any).permissions = {
+              ...(user.role as any).permissions,
+              ...user.permissions,
+            };
+          }
+
+          return R("admin data", user);
         },
         authSchema.me,
       )
@@ -83,5 +99,5 @@ export default createElysia({ prefix: "/auth" }).guard(
           return R("Password Change SuccessFully");
         },
         authSchema.change_password,
-      )
+      ),
 );

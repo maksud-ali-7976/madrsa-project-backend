@@ -2,67 +2,132 @@ import { customError } from "src/utils/AppErr";
 
 import Admin from "src/models/Admin";
 import JWT from "src/utils/jwt";
+import { abilityHttpMap } from "src/models/Role";
+import { routeMap } from "src";
 
 export const isAdminAuthenticated = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Context: any,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	Context: any,
 ) => {
-  const { set, headers, request } = Context;
-  // console.log("/!\\ AUTHENTICATED GUARD /!\\");
+	const { set, headers, request } = Context;
+	// console.log("/!\\ AUTHENTICATED GUARD /!\\");
 
-  if (!headers!.authorization) {
-    // console.log("@Error: No access token", headers);
-    set.status = 401;
-    return {
-      status: false,
-      message: "Unauthorized",
-      data: "No access token",
-    };
-  }
+	if (!headers!.authorization) {
+		// console.log("@Error: No access token", headers);
+		set.status = 401;
+		return {
+			status: false,
+			message: "Unauthorized",
+			data: "No access token",
+		};
+	}
 
-  let token = headers.authorization.replace("Bearer ", "");
+	let token = headers.authorization.replace("Bearer ", "");
 
-  const jwt = JWT.verify(token);
-  if (!jwt) {
-    // console.log("@Error: Invalid access token", jwt);
-    set.status = 401;
-    return {
-      status: false,
-      message: "Unauthorized",
-      data: "Invalid access token",
-    };
-  }
+	const jwt = JWT.verify(token);
+	if (!jwt) {
+		// console.log("@Error: Invalid access token", jwt);
+		set.status = 401;
+		return {
+			status: false,
+			message: "Unauthorized.",
+			data: "Invalid access token",
+		};
+	}
 
-  const { _id } = jwt;
-  if (!_id) {
-    // console.log("@Error: Invalid access token", _id);
-    set.status = 401;
-    return {
-      status: false,
-      message: "Unauthorized",
-      data: "Invalid access token",
-    };
-  }
+	const { _id } = jwt;
+	if (!_id) {
+		// console.log("@Error: Invalid access token", _id);
+		set.status = 401;
+		return {
+			status: false,
+			message: "Unauthorized",
+			data: "access token is empty",
+		};
+	}
 
-  if (!jwt) {
-    // console.log("@Error: User not found", jwt);
-    set.status = 401;
-    return {
-      status: false,
-      message: "Unauthorized",
-      data: "User not found",
-    };
-  }
+	const user = await Admin.findById(jwt._id).populate("role");
 
-  const user = await Admin.findById(jwt._id);
+	if (!user) {
+		set.status = 401;
 
-  // const userContext = new Elysia({ name: "user" }).decorate("user", user);
-  Context.user = user;
+		return {
+			status: false,
+			message: "Unauthorized",
+			data: "User did not match",
+		};
+	}
 
-  // console.log("user", userContext);
+	// const clientIP = request.headers.get("x-forwarded-for");
 
-  // return {
-  // 	status: true,
-  // 	data: user,
-  // };
+	// if (user.ip && user.ip != clientIP) {
+	// 	set.status = 401;
+
+	// 	return {
+	// 		status: false,
+	// 		message: "Unauthorized",
+	// 		data: "User not found",
+	// 	};
+	// }
+
+	// const userContext = new Elysia({ name: "user" }).decorate("user", user);
+	Context.user = user;
+
+	// console.log("user", userContext);
+
+	// return {
+	// 	status: true,
+	// 	data: user,
+	// };
+
+	const meta = routeMap.get(Context.path);
+
+	if (!(user.role as any).super_admin) {
+		console.log(
+			"User role Level",
+			(user.role as any)?.level,
+			"User Permission",
+			(user.role as any).permissions,
+		);
+		console.log("User Permission", user?.permissions);
+		console.log("Meta", meta);
+
+
+		const moduleId = `${meta?.modules[0]}`;
+		// console.log("ModuleId", moduleId);
+
+		const permission =
+			(user as any)?.permissions?.[moduleId]?.ability ??
+			(user.role as any)?.permissions?.[moduleId]?.ability;
+
+		if (!permission) {
+			return {
+				status: false,
+				message: "lack of authorization",
+				data: [],
+			};
+		}
+
+		const method = (Context.request.method as string).toUpperCase();
+
+		const ability = (abilityHttpMap as any)[method];
+
+		if (!ability) {
+			return {
+				status: false,
+				message: "invalid authorization method",
+				data: [],
+			};
+		}
+
+		if (!permission.includes(ability)) {
+			return {
+				status: false,
+				message: "Permission denied",
+				data: [],
+			};
+		}
+	}
+	// attachAccessBuilder(Context, user);
 };
+

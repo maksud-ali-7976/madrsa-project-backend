@@ -1,5 +1,6 @@
 import { t } from "elysia";
 import { isAdminAuthenticated } from "src/guard/admin.guard";
+import { RoleSchema } from "../roles/roles.schema";
 
 export const AdminSchema = t.Object({
   _id: t.Optional(t.String()),
@@ -9,6 +10,7 @@ export const AdminSchema = t.Object({
   email: t.Optional(t.String()),
   password: t.Optional(t.String()),
   token: t.Optional(t.String()),
+  role: RoleSchema,
 });
 //
 export default {
