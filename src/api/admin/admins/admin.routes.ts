@@ -18,7 +18,7 @@ export default createElysia({ prefix: "/admins" }).guard(
 	{
 		detail: {
 			tags: ["Admin"],
-			summary: Summary([ModuleId.ROLES_AND_PERMISSIONS]),
+			summary: Summary([ModuleId.TEACHERS]),
 		},
 		beforeHandle: isAdminAuthenticated,
 	},

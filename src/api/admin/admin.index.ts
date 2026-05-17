@@ -8,6 +8,7 @@ import attendanceRoutes from "./Attendance/attendance.route";
 import classRoutes from "./class/class.routes";
 import mediaRoutes from "./media/media.routes";
 import adminRoutes from "./admins/admin.routes";
+import moduleRoutes from "./modules/module.routes";
 
 const adminRoute = createElysia({ prefix: "/admin" });
 
@@ -20,5 +21,6 @@ adminRoute.use(attendanceRoutes);
 adminRoute.use(classRoutes)
 adminRoute.use(mediaRoutes)
 adminRoute.use(adminRoutes)
+adminRoute.use(moduleRoutes)
 
 export default adminRoute;

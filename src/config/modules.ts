@@ -11,7 +11,6 @@ export enum ModuleId {
   DONATIONS = 4,
   RESULT = 5,
   CLASSES = 6,
-  ROLES_AND_PERMISSIONS = 7,
   ATTENDANCE = 8
 }
 
@@ -30,7 +29,6 @@ const gen = (_id: number, name: string) => ({ _id, name });
 
 export const BasicModuleList = [
   gen(ModuleId.DASHBOARD, "Dashboard"),
-    gen(ModuleId.ROLES_AND_PERMISSIONS, "Roles & Permissions"),
 ];
 export const AdditionalModuleList = [
   gen(ModuleId.CLASSES, "Classes"),
