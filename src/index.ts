@@ -239,6 +239,12 @@ app.use(
 		},
 	}),
 );
+
+app.get("/health", () => {
+	return {
+		status: true,
+	};
+});
 export const routeMap: Map<any, { modules: ModuleId[] }> = new Map();
 for (let route of app.routes) { if (route.hooks.detail?.summary) { routeMap.set(route.path, JSON.parse(route.hooks.detail?.summary)); } }
 
@@ -253,4 +259,14 @@ connectDB("APP").then((d) => {
 		`🦊 Elysia is running at ${app.server?.hostname}:${env.port || 8080
 		} ${moment().format("h:mm:ss a, MMMM Do YYYY")}`,
 	);
+
+	setInterval(async () => {
+		try {
+			await fetch("https://madrsa-project-backend.onrender.com/health");
+
+			console.log("✅ Self ping success");
+		} catch (error) {
+			console.log("❌ Self ping failed");
+		}
+	}, 1000 * 60 * 5);
 });
