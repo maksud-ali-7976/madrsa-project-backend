@@ -1,6 +1,7 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import type { Ref } from "@typegoose/typegoose";
 import { StudentClass } from "./Student";
+import { MadrasaClass } from "./Class";
 
 @modelOptions({ schemaOptions: { collection: "Results", timestamps: true } })
 export class ResultClass {
@@ -10,8 +11,8 @@ export class ResultClass {
   @prop({})
   public session!: string;
 
-  @prop({})
-  public class!: string;
+  @prop({ ref: () => MadrasaClass })
+  public class!: Ref<MadrasaClass>;
 
   @prop({})
   public marks!: number;
@@ -24,5 +25,11 @@ export class ResultClass {
 
   @prop({ default: Date.now })
   public issue_date?: Date;
+
+  @prop({ default: 0 })
+  public total?: number
+
+  @prop({})
+  public percentage?: number
 }
 export default getModelForClass(ResultClass);

@@ -23,7 +23,9 @@ export default createElysia({ prefix: "/results" }).guard(
           const [list, total] = await Promise.all([
             Result.find({})
               .skip(page * size)
-              .limit(size),
+              .limit(size)
+              .populate("student")
+              .populate("class"),
             Result.countDocuments(),
           ]);
 
@@ -40,9 +42,35 @@ export default createElysia({ prefix: "/results" }).guard(
       .post(
         "/",
         async ({ body }) => {
+          let total = 100;
+          let grade = "";
+          let remarks = "";
+          const marks = body.marks || 0;
+          const percentage = (marks / total) * 100;
+
+          if (percentage >= 90) {
+            grade = "A+";
+            remarks = "Outstanding Performance";
+          } else if (percentage >= 80) {
+            grade = "A";
+            remarks = "Excellent Work";
+          } else if (percentage >= 60) {
+            grade = "B"
+            remarks = "Very Good";
+          } else if (percentage >= 50) {
+            grade = "C"
+            remarks = "Good Effort";
+          } else if (percentage >= 33) {
+            grade = "D"
+            remarks = "Needs Improvement";
+          } else {
+            grade = "F"
+            remarks = "Poor Performance But Better Luck Next Time";
+          }
           const ExitingResult = await Result.findOne({
             student: body.student,
             session: body.session,
+            class: body.class,
           });
           if (ExitingResult) {
             return customError(
@@ -52,14 +80,22 @@ export default createElysia({ prefix: "/results" }).guard(
           const result = await Result.create({
             student: body.student,
             class: body.class,
-            grade: body.grade,
-            marks: body.marks,
-            remarks: body.remarks,
+            grade: grade,
+            marks: marks,
+            remarks: remarks,
             session: body.session,
+            total: total,
+            percentage: percentage
           });
 
           return R("Result ceated Successfully", result);
         },
         resultSchema.add,
-      ),
+      ).get("/detail", async ({ query }) => {
+        const entry = await Result.findOne({ student: query.studentId })
+          .populate("student")
+          .populate("class")
+        return R("Result Detail", entry);
+      }, resultSchema.detail)
+  ,
 );

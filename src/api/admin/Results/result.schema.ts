@@ -1,14 +1,18 @@
 import { t } from "elysia";
+import { StoreClassSchema } from "../class/class.schema";
+import { StoreStudentSchema } from "../Students/students.schema";
 
 export const ResultStoreSchema = t.Object({
   _id: t.Optional(t.String()),
-  student: t.Any(),
+  student: StoreStudentSchema,
   session: t.String(),
-  class: t.String(),
+  class: StoreClassSchema,
   marks: t.Number(),
   grade: t.String(),
   remarks: t.String(),
   issue_date: t.String(),
+  total: t.Number(),
+  percentage: t.Number()
 });
 
 export const MetaPagination = t.Object({
@@ -47,8 +51,6 @@ export default {
       session: t.String(),
       class: t.String(),
       marks: t.Number(),
-      grade: t.String(),
-      remarks: t.String(),
     }),
     response: {
       200: t.Object(
@@ -94,4 +96,19 @@ export default {
       operationId: "ResultUpdate",
     },
   },
+  detail: {
+    query: t.Object({
+      studentId: t.String()
+    }),
+    response: {
+      200: t.Object({
+        status: t.Boolean(),
+        message: t.String(),
+        data: ResultStoreSchema
+      }, {
+        description: "Student Detail Response"
+      })
+    },
+    detailId: "ResultDetail"
+  }
 };
