@@ -278,7 +278,7 @@ for (let route of app.routes) {
 
 app.use(adminRoute);
 
-
+console.log("Bun Version", Bun.version);
 
 app.get("/health", () => {
   return {
