@@ -1,11 +1,12 @@
 import { isAdminAuthenticated } from "src/guard/admin.guard";
-import Class from "src/models/Class";
+import Class, { MadrasaClass } from "src/models/Class";
 import { createElysia } from "src/utils/createElysia";
 import schema, { name } from "./class.schema";
 import { R } from "src/utils/response-helpers";
 import { customError } from "src/utils/AppErr";
 import { ModuleId, Summary } from "src/config/modules";
 import Student from "src/models/Student";
+import { RootFilterQuery } from "mongoose";
 
 export default createElysia({ prefix: "/class" }).guard(
   {
@@ -19,13 +20,18 @@ export default createElysia({ prefix: "/class" }).guard(
     app
       .get(
         "/",
-        async ({ query }) => {
+        async ({ query, user }) => {
           const page = parseInt(query.page || "0");
           const size = parseInt(query.size || "10");
+          let fillter: RootFilterQuery<MadrasaClass> = {};
           let list: any[] = [];
+          console.log("User Log", user.role.level);
 
+          if (!user.super_admin) {
+            fillter.teacher = user._id;
+          }
           const [classes, total] = await Promise.all([
-            Class.find()
+            Class.find(fillter)
               .skip(page * size)
               .populate("teacher")
               .limit(size)
@@ -35,7 +41,7 @@ export default createElysia({ prefix: "/class" }).guard(
           ]);
           for (const item of classes) {
             const total_students = await Student.countDocuments({
-              current_class: item._id,
+              class: item._id,
             });
 
             list.push({
@@ -44,7 +50,7 @@ export default createElysia({ prefix: "/class" }).guard(
             });
           }
           const pages = Math.ceil(total / size);
-          console.log("List", list)
+          console.log("List", list);
           return R(`${name} List`, list, true, {
             pages,
             total,

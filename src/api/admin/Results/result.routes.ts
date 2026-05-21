@@ -4,11 +4,13 @@ import { R } from "src/utils/response-helpers";
 import { customError } from "src/utils/AppErr";
 import { createElysia } from "src/utils/createElysia";
 import resultSchema from "./result.schema";
+import { ModuleId, Summary } from "src/config/modules";
 
 export default createElysia({ prefix: "/results" }).guard(
   {
     detail: {
       tags: ["Results"],
+      summary: Summary([ModuleId.RESULT]),
     },
     beforeHandle: isAdminAuthenticated,
   },

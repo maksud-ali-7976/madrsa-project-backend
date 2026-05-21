@@ -1,10 +1,11 @@
 import { createElysia } from "src/utils/createElysia";
-import Student from "src/models/Student";
+import Student, { StudentClass } from "src/models/Student";
 import { isAdminAuthenticated } from "src/guard/admin.guard";
 import { R } from "src/utils/response-helpers";
 import { customError } from "src/utils/AppErr";
 import studentsSchema from "./students.schema";
 import { ModuleId, Summary } from "src/config/modules";
+import { RootFilterQuery } from "mongoose";
 
 export default createElysia({ prefix: "/students" }).guard(
   {
@@ -22,9 +23,12 @@ export default createElysia({ prefix: "/students" }).guard(
           const page = parseInt(query.page || "0");
           const size = parseInt(query.size || "10");
           // console.log("PAge", page, "size", size);
-
+          const fillter: RootFilterQuery<StudentClass> = {};
+          if (query.classId) {
+            fillter.class = query.classId;
+          }
           const [list, total] = await Promise.all([
-            Student.find()
+            Student.find(fillter)
               .skip(page * size)
               .populate("class")
               .limit(size),

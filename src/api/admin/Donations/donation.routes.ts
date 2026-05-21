@@ -5,11 +5,13 @@ import Donations from "src/models/Donations";
 import { isAdminAuthenticated } from "src/guard/admin.guard";
 import donationsSchema from "./donations.schema";
 import moment from "moment";
+import { ModuleId, Summary } from "src/config/modules";
 
 export default createElysia({ prefix: "/donations" }).guard(
   {
     detail: {
       tags: ["Donations"],
+      summary: Summary([ModuleId.DONATIONS]),
     },
     beforeHandle: isAdminAuthenticated,
   },

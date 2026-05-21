@@ -25,6 +25,7 @@ export default {
     query: t.Object({
       page: t.String(),
       size: t.String(),
+      classId: t.Optional(t.String()),
     }),
     response: {
       200: t.Object(
