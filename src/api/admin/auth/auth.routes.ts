@@ -81,6 +81,7 @@ export default createElysia({ prefix: "/auth" }).guard(
       .post(
         "/password-change",
         async (ctx) => {
+          console.log("Body", ctx.body);
           const user = await Admin.findById(ctx.user._id);
           console.log("User", user);
 
@@ -88,7 +89,7 @@ export default createElysia({ prefix: "/auth" }).guard(
             return customError("User Not Found");
           }
 
-          if (VerifyPassword(ctx.body.old_password, user.password)) {
+          if (!VerifyPassword(ctx.body.old_password, user.password)) {
             return customError("Old Password Wrong");
           }
 
