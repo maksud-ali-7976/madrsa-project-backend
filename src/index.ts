@@ -289,7 +289,7 @@ connectDB("APP").then((d) => {
   app.listen(env.port || 8080);
 
   console.log(
-    `🦊 Elysia is running at ${app.server?.hostname}:${
+    `🦊 Elysia is Att running at ${app.server?.hostname}:${
       env.port || 8080
     } ${moment().format("h:mm:ss a, MMMM Do YYYY")}`,
   );
