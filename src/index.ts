@@ -42,39 +42,68 @@ app.use(
   }),
 );
 
-app.onError(({ error, code, set, ...rest }: any) => {
+// app.onError(({ error, code, set, ...rest }: any) => {
+//   if (error instanceof AppErr) {
+//     set.status = "OK";
+//     return R(error.message, null, false);
+//   }
+
+//   const errorType = "type" in error ? error.type : "internal";
+
+//   if (errorType == "internal") {
+//     console.log(`${errorType} ERROR: ${JSON.stringify(error, null, 2)}`);
+//     set.status = "OK";
+//     return { status: false, message: error.message, data: null };
+//   } else if (errorType == "response") {
+//     set.status = "OK";
+//     const result = JSON.parse(error?.message);
+//     return result?.found;
+//   } else if (["body", "query"].includes(errorType)) {
+//     set.status = "OK";
+//     const result = JSON.parse(error?.message);
+//     const message = result.errors
+//       .map(
+//         (err: any) =>
+//           `${err.path.replace("/", "").replace("_", " ").toUpperCase()} ${
+//             err.message
+//           }`,
+//       )
+//       .join("\n");
+
+//     return { status: false, message: message, data: null };
+//   }
+//   console.log(`${errorType} ERRRO ❌: ${JSON.stringify(error, null, 2)}`);
+
+//   return { status: false, message: error.message, data: null };
+// });
+app.onError(({ error, code, set }: any) => {
+  if (code === "NOT_FOUND") {
+    set.status = 404;
+
+    return {
+      status: false,
+      message: "Route Not Found",
+      data: null,
+    };
+  }
+
   if (error instanceof AppErr) {
-    set.status = "OK";
+    set.status = 200;
+
     return R(error.message, null, false);
   }
 
   const errorType = "type" in error ? error.type : "internal";
 
-  if (errorType == "internal") {
-    console.log(`${errorType} ERROR: ${JSON.stringify(error, null, 2)}`);
-    set.status = "OK";
-    return { status: false, message: error.message, data: null };
-  } else if (errorType == "response") {
-    set.status = "OK";
-    const result = JSON.parse(error?.message);
-    return result?.found;
-  } else if (["body", "query"].includes(errorType)) {
-    set.status = "OK";
-    const result = JSON.parse(error?.message);
-    const message = result.errors
-      .map(
-        (err: any) =>
-          `${err.path.replace("/", "").replace("_", " ").toUpperCase()} ${
-            err.message
-          }`,
-      )
-      .join("\n");
+  console.log(`${errorType} ERROR:`, error);
 
-    return { status: false, message: message, data: null };
-  }
-  console.log(`${errorType} ERRRO ❌: ${JSON.stringify(error, null, 2)}`);
+  set.status = 500;
 
-  return { status: false, message: error.message, data: null };
+  return {
+    status: false,
+    message: error.message || "Internal Server Error",
+    data: null,
+  };
 });
 
 app.onTransform(({ body = {}, params = {}, query = {}, logger }) => {
@@ -248,6 +277,14 @@ for (let route of app.routes) {
 }
 
 app.use(adminRoute);
+
+console.log(
+  app.routes.map((r) => ({
+    method: r.method,
+    path: r.path,
+  })),
+);
+
 app.get("/health", () => {
   return {
     status: true,
