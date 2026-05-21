@@ -278,12 +278,7 @@ for (let route of app.routes) {
 
 app.use(adminRoute);
 
-console.log(
-  app.routes.map((r) => ({
-    method: r.method,
-    path: r.path,
-  })),
-);
+
 
 app.get("/health", () => {
   return {
