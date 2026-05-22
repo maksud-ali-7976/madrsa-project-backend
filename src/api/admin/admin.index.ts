@@ -9,6 +9,7 @@ import classRoutes from "./class/class.routes";
 import mediaRoutes from "./media/media.routes";
 import adminRoutes from "./admins/admin.routes";
 import moduleRoutes from "./modules/module.routes";
+import dashboardRoute from "./dashboard/dashboard.route";
 
 const adminRoute = createElysia({ prefix: "/admin" });
 
@@ -18,9 +19,9 @@ adminRoute.use(resultRoutes);
 adminRoute.use(studentRoute);
 adminRoute.use(rolesRoutes);
 adminRoute.use(attendanceRoutes);
-adminRoute.use(classRoutes)
-adminRoute.use(mediaRoutes)
-adminRoute.use(adminRoutes)
-adminRoute.use(moduleRoutes)
-
+adminRoute.use(classRoutes);
+adminRoute.use(mediaRoutes);
+adminRoute.use(adminRoutes);
+adminRoute.use(moduleRoutes);
+adminRoute.use(dashboardRoute);
 export default adminRoute;

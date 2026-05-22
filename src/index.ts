@@ -333,15 +333,15 @@ connectDB("APP").then(() => {
     )}`,
   );
 
-  setInterval(async () => {
-    try {
-      await fetch(
-        "https://madrsa-project-backend.onrender.com/health",
-      );
+  // setInterval(async () => {
+  //   try {
+  //     await fetch(
+  //       "https://madrsa-project-backend.onrender.com/health",
+  //     );
 
-      console.log("✅ Self ping success");
-    } catch (error) {
-      console.log("❌ Self ping failed");
-    }
-  }, 1000 * 60 * 5);
+  //     console.log("✅ Self ping success");
+  //   } catch (error) {
+  //     console.log("❌ Self ping failed");
+  //   }
+  // }, 1000 * 60 * 5);
 });
