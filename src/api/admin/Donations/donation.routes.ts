@@ -1,11 +1,12 @@
 import { createElysia } from "src/utils/createElysia";
 import { R } from "src/utils/response-helpers";
 import { customError } from "src/utils/AppErr";
-import Donations from "src/models/Donations";
+import Donations, { DonationsClass } from "src/models/Donations";
 import { isAdminAuthenticated } from "src/guard/admin.guard";
 import donationsSchema from "./donations.schema";
 import moment from "moment";
 import { ModuleId, Summary } from "src/config/modules";
+import { RootFilterQuery } from "mongoose";
 
 export default createElysia({ prefix: "/donations" }).guard(
   {
@@ -19,12 +20,16 @@ export default createElysia({ prefix: "/donations" }).guard(
     app
       .get(
         "/",
-        async ({ query }) => {
+        async ({ query, user }) => {
           const page = parseInt(query.page || "");
           const size = parseInt(query.size || "");
 
+          let fillter: RootFilterQuery<DonationsClass> = {};
+          if (!user.super_admin) {
+            fillter.admin = user._id;
+          }
           const [donations, total] = await Promise.all([
-            Donations.find()
+            Donations.find(fillter)
               .skip(page * size)
               .limit(size),
             Donations.countDocuments(),
@@ -82,5 +87,13 @@ export default createElysia({ prefix: "/donations" }).guard(
           return R("Donation Stats", stats);
         },
         donationsSchema.stats,
+      )
+      .get(
+        "/detail",
+        async ({ query }) => {
+          const entry = await Donations.findById(query.id);
+          return R("Donation Detail", entry);
+        },
+        donationsSchema.detail,
       ),
 );

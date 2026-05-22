@@ -116,4 +116,22 @@ export default {
       operationId: "DonationStats",
     },
   },
+  detail: {
+    query: t.Object({
+      id: t.String(),
+    }),
+    response: {
+      200: t.Object(
+        {
+          status: t.Boolean(),
+          message: t.String(),
+          data: DonationSchema,
+        },
+        {
+          description: "Student Detail Response",
+        },
+      ),
+    },
+    detailId: "DonationDetail",
+  },
 };
