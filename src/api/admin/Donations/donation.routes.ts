@@ -28,6 +28,9 @@ export default createElysia({ prefix: "/donations" }).guard(
           if (!user.super_admin) {
             fillter.admin = user._id;
           }
+          if (query.type) {
+            fillter.type = query.type;
+          }
           const [donations, total] = await Promise.all([
             Donations.find(fillter)
               .skip(page * size)
